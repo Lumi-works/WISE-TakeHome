@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Product Management System
 
-## Getting Started
+Frontend: Typescript & Next.js & Tailwind & NextUI
+Backend: MikroORM & PostgreSQL
 
-First, run the development server:
+## Table of Contents
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- [Product Management System](#product-management-system)
+  - [Table of Contents](#table-of-contents)
+  - [Project Setup](#project-setup)
+    - [Requirements](#requirements)
+    - [Installation](#installation)
+  - [Folder Structure](#folder-structure)
+  - [Backend Setup](#backend-setup)
+    - [MikroORM Configuration](#mikroorm-configuration)
+  - [Running the Project](#running-the-project)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Requirements
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js (>= 18.0.0)
+- PostgreSQL
+- MikroORM
+- Next.js (>= 13)
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repository:**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   git clone <repository-url>
+   cd <project-directory>
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Install dependencies:**
 
-## Deploy on Vercel
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Set up environment variables:**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   Create a `.env.local` file in the root directory and add the following environment variables:
+
+   ```env
+   DATABASE_URL=postgresql://user:password@localhost:5432/database
+   ```
+
+   Replace `user`, `password`, and `database` with your PostgreSQL credentials.
+
+## Folder Structure
+
+- `src/app/api/product/route.ts`: API route for fetching products.
+- `entities/Product.ts`: MikroORM entity definition for products.
+- `public/`: Static assets.
+- `src/components/ProductCard.tsx`: Component to display individual product cards.
+- `src/app/page.tsx`: Frontend component to fetch and display products.
+- `utils`: Initialize MikroORM (having some trouble setting up)
+
+## Backend Setup
+
+### MikroORM Configuration
+
+1. **Create the MikroORM configuration file:**
+
+   ```typescript
+   // config/mikro-orm.ts
+   import { Options, PostgreSqlDriver } from "@mikro-orm/postgresql";
+   import { Product } from "../entities/Product";
+   import { Cart } from "../entities/Cart";
+
+   const config: Options = {
+     driver: PostgreSqlDriver,
+     migrations: {
+       path: "/migrations",
+     },
+     entities: [Product, Cart],
+     dbName: "testdb",
+     user: "postgres",
+     password: "psql",
+     host: "localhost",
+     port: 5432,
+     debug: process.env.NODE_ENV !== "production",
+   };
+
+   export default config;
+   ```
+
+2. **Create the Product entity:**
+
+   ```typescript
+   // lib/database/entities/Product.ts
+   import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+
+   @Entity()
+   export class Product {
+     @PrimaryKey({ autoincrement: true })
+     id!: number;
+
+     @Property()
+     name!: string;
+
+     @Property()
+     description!: string;
+
+     @Property()
+     price!: number;
+
+     @Property()
+     imageUrl!: string;
+
+     constructor(
+       name: string,
+       description: string,
+       price: number,
+       imageUrl: string
+     ) {
+       this.name = name;
+       this.description = description;
+       this.price = price;
+       this.imageUrl = imageUrl;
+     }
+   }
+   ```
+
+3. **Database Initialization and Migration:**
+
+   Run the following commands to initialize and migrate the database:
+
+   ```bash
+   npx mikro-orm migration:generate --initial
+   npx mikro-orm migration:up
+   ```
+
+## Running the Project
+
+1. **Start the development server:**
+
+   ```bash
+   npm run dev
+   ```
+
+2. **Visit the application:**
+
+   Open `http://localhost:3000` in your browser to view the application.
